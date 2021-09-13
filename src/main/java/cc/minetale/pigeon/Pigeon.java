@@ -35,8 +35,8 @@ public class Pigeon {
 
         this.postOffice = new PostOffice(this, host, port, networkId, unitId);
 
-        this.convertersRegistry.registerConvertersInPackage("com.customwrld.pigeon.converters");
-        this.payloadsRegistry.registerPayloadsInPackage("com.customwrld.pigeon.payloads");
+        this.convertersRegistry.registerConvertersInPackage("cc.minetale.pigeon.converters");
+        this.payloadsRegistry.registerPayloadsInPackage("cc.minetale.pigeon.payloads");
     }
 
     public void acceptDelivery() {
