@@ -46,7 +46,7 @@ public abstract class FeedbackPayload extends BasePayload {
 
     @Override
     public FeedbackPayload fromJson(String json) {
-        JsonObject fromJson = Pigeon.getGson()
+        JsonObject fromJson = Pigeon.getPigeon().getGson()
                 .fromJson(json, JsonObject.class);
 
         this.origin = new PostalUnit(StringConverter.Utils.convertToValue(fromJson.get("origin")));
@@ -152,6 +152,6 @@ public abstract class FeedbackPayload extends BasePayload {
             data.add(fieldName, converter.convertToSimple(field.getGenericType(), value));
         }
 
-        return Pigeon.getGson().toJson(data);
+        return Pigeon.getPigeon().getGson().toJson(data);
     }
 }

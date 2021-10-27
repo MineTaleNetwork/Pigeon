@@ -30,7 +30,7 @@ public class StringConverter extends Converter<String> {
         }
 
         public static JsonElement convertToSimple(String value) {
-            return Pigeon.getGson().toJsonTree(value.getBytes(StandardCharsets.UTF_16));
+            return Pigeon.getPigeon().getGson().toJsonTree(value.getBytes(StandardCharsets.UTF_16));
         }
     }
 

@@ -15,20 +15,21 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+@Getter
 public class Pigeon {
 
     @Getter private static Pigeon pigeon;
 
-    @Getter private PostOffice postOffice;
+    private PostOffice postOffice;
 
-    @Getter private ConvertersRegistry convertersRegistry = new ConvertersRegistry();
-    @Getter private ListenersRegistry listenersRegistry = new ListenersRegistry();
-    @Getter private PayloadsRegistry payloadsRegistry = new PayloadsRegistry();
+    private final ConvertersRegistry convertersRegistry = new ConvertersRegistry();
+    private final ListenersRegistry listenersRegistry = new ListenersRegistry();
+    private final PayloadsRegistry payloadsRegistry = new PayloadsRegistry();
 
-    @Getter private Gson prettyGson = new GsonBuilder().setPrettyPrinting().create();
-    @Getter private Gson gson = new GsonBuilder().create();
+    private final Gson prettyGson = new GsonBuilder().setPrettyPrinting().create();
+    private final Gson gson = new GsonBuilder().create();
 
-    @Getter @Nullable private ScheduledFuture<?> defaultUpdater;
+    @Nullable private ScheduledFuture<?> defaultUpdater;
 
     public void initialize(String host, int port, String networkId, String unitId) {
         pigeon = this;
@@ -92,10 +93,6 @@ public class Pigeon {
 
     private String getTransmitReadyData(BasePayload payload) {
         return payload.getPayloadId() + "&" + payload.toJson();
-    }
-
-    public static Gson getGson() {
-        return pigeon.gson;
     }
 
 }
