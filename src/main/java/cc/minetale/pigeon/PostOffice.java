@@ -19,21 +19,27 @@ import java.util.function.Consumer;
 /**
  * Manages sending and receiving messages through a RabbitMQ broker.
  */
+@Getter
 public class PostOffice {
 
     public static final String EXCHANGE = "pigeon";
 
     private final Pigeon pigeon;
 
-    @Getter private final String host;
-    @Getter private final int port;
+    private final String host;
+    private final int port;
+
+    private final String username;
+    private final String password;
+
+    private final String virtualHost;
 
     private String networkId;
-    @Getter private PostalUnit unit;
+    private PostalUnit unit;
 
     private Connection rabbitMqConnection;
 
-    @Getter private Channel channel;
+    private Channel channel;
 
     private String queue;
 
@@ -42,6 +48,11 @@ public class PostOffice {
 
         this.host = host;
         this.port = port;
+
+        this.username = System.getProperty("pigeonUsername", "guest");
+        this.password = System.getProperty("pigeonPassword", "guest");
+
+        this.virtualHost = System.getProperty("pigeonVirtualHost", "/");
 
         this.networkId = networkId;
         this.unit = new PostalUnit(unitId);
@@ -52,6 +63,11 @@ public class PostOffice {
             var factory = new ConnectionFactory();
             factory.setHost(host);
             factory.setPort(port);
+
+            factory.setUsername(username);
+            factory.setPassword(password);
+
+            factory.setVirtualHost(virtualHost);
 
             this.rabbitMqConnection = factory.newConnection();
 
