@@ -58,4 +58,4 @@ tasks.withType(Jar) {
     destinationDirectory = file("../../Build")
 }
 
-task buildJar(dependsOn: ['clean', 'publishToMavenLocal'])
+task buildJar(dependsOn: ['publishToMavenLocal'])
