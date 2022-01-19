@@ -1,7 +1,7 @@
 package cc.minetale.pigeon.payloads;
 
-import cc.minetale.pigeon.payloads.bases.BasePayload;
 import cc.minetale.pigeon.annotations.Transmit;
+import cc.minetale.pigeon.payloads.bases.BasePayload;
 import lombok.Getter;
 
 @Getter

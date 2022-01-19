@@ -1,9 +1,10 @@
 package cc.minetale.pigeon;
 
-import cc.minetale.pigeon.payloads.bases.BasePayload;
 import cc.minetale.pigeon.feedback.Feedback;
 import cc.minetale.pigeon.feedback.FeedbackState;
+import cc.minetale.pigeon.payloads.bases.BasePayload;
 import cc.minetale.pigeon.payloads.bases.FeedbackPayload;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
@@ -28,7 +29,7 @@ public class PostOffice {
     @Getter private final String host;
     @Getter private final int port;
 
-    private String networkId;
+    @Getter private String networkId;
     @Getter private PostalUnit unit;
 
     private Connection rabbitMqConnection;
@@ -78,17 +79,21 @@ public class PostOffice {
         String payloadData = data[1];
 
         var payloadsRegistry = this.pigeon.getPayloadsRegistry();
-        BasePayload payload = payloadsRegistry.getPayloadById(payloadId);
 
-        if (payload == null) { return; }
+        BasePayload basePayload = payloadsRegistry.getPayloadById(payloadId);
+        if (basePayload == null) { return; }
 
-        payload.fromJson(payloadData);
+        BasePayload payload;
+        try {
+            payload = basePayload.fromJson(payloadData);
+        } catch(JsonProcessingException e) {
+            e.printStackTrace();
+            return;
+        }
 
-        if(this.unit.getId().equals(payload.getOrigin().getId())) { return; }
+        if(this.unit.id().equals(payload.getOrigin().id())) { return; }
 
-        if(payload instanceof FeedbackPayload) {
-            FeedbackPayload feedbackPayload = (FeedbackPayload) payload;
-
+        if(payload instanceof FeedbackPayload feedbackPayload) {
             if(feedbackPayload.getPayloadState() == FeedbackState.RESPONSE) {
                 var feedback = Feedback.getFeedbacks().get(feedbackPayload.getFeedbackID());
                 if(feedback != null) {
@@ -135,7 +140,7 @@ public class PostOffice {
     public void bindQueues() {
         try {
             this.channel.queueBind(this.queue, EXCHANGE, this.networkId + ":" + "pigeon-broadcast");
-            this.channel.queueBind(this.queue, EXCHANGE, this.networkId + ":" + this.unit.getId());
+            this.channel.queueBind(this.queue, EXCHANGE, this.networkId + ":" + this.unit.id());
         } catch (IOException exception) {
             exception.printStackTrace();
         }

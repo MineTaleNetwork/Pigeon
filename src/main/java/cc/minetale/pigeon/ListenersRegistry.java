@@ -1,9 +1,9 @@
 package cc.minetale.pigeon;
 
-import cc.minetale.pigeon.listeners.Listener;
-import cc.minetale.pigeon.payloads.bases.BasePayload;
 import cc.minetale.pigeon.annotations.PayloadHandler;
 import cc.minetale.pigeon.annotations.PayloadListener;
+import cc.minetale.pigeon.listeners.Listener;
+import cc.minetale.pigeon.payloads.bases.BasePayload;
 import cc.minetale.pigeon.payloads.bases.FeedbackPayload;
 import lombok.Getter;
 

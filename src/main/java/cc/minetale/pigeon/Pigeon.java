@@ -1,11 +1,13 @@
 package cc.minetale.pigeon;
 
-import cc.minetale.pigeon.payloads.bases.BasePayload;
 import cc.minetale.pigeon.feedback.Feedback;
 import cc.minetale.pigeon.feedback.FeedbackState;
+import cc.minetale.pigeon.filters.PigeonPropertyFilter;
+import cc.minetale.pigeon.payloads.bases.BasePayload;
 import cc.minetale.pigeon.payloads.bases.FeedbackPayload;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,22 +24,20 @@ public class Pigeon {
 
     private PostOffice postOffice;
 
-    private final ConvertersRegistry convertersRegistry = new ConvertersRegistry();
     private final ListenersRegistry listenersRegistry = new ListenersRegistry();
     private final PayloadsRegistry payloadsRegistry = new PayloadsRegistry();
 
-    private final Gson prettyGson = new GsonBuilder().setPrettyPrinting().create();
-    private final Gson gson = new GsonBuilder().create();
+    private ObjectMapper mapper;
 
     @Nullable private ScheduledFuture<?> defaultUpdater;
 
-    public void initialize(String host, int port, String networkId, String unitId) {
+    public void initialize(String host, int port, String networkId, String unitId, ObjectMapper mapper) {
         pigeon = this;
-
         this.postOffice = new PostOffice(this, host, port, networkId, unitId);
-
-        this.convertersRegistry.registerConvertersInPackage("cc.minetale.pigeon.converters");
         this.payloadsRegistry.registerPayloadsInPackage("cc.minetale.pigeon.payloads");
+        this.mapper = mapper
+                .setFilterProvider(new SimpleFilterProvider()
+                        .addFilter("feedbackPayloads", new PigeonPropertyFilter()));
     }
 
     public void acceptDelivery() {
@@ -45,25 +45,33 @@ public class Pigeon {
     }
 
     public void broadcast(BasePayload payload) {
-        if(payload instanceof FeedbackPayload) {
-            var feedbackPayload = (FeedbackPayload) payload;
+        if(payload instanceof FeedbackPayload feedbackPayload) {
             if(feedbackPayload.getPayloadState() == FeedbackState.REQUEST) { setupFeedback(feedbackPayload, true); }
         }
 
         payload.setOrigin(this.postOffice.getUnit());
 
-        this.postOffice.send("pigeon-broadcast", getTransmitReadyData(payload));
+        try {
+            final var data = getTransmitReadyData(payload);
+            this.postOffice.send("pigeon-broadcast", data);
+        } catch(JsonProcessingException e) {
+            e.printStackTrace();
+        }
     }
 
     public void sendTo(BasePayload payload, PostalUnit target) {
-        if(payload instanceof FeedbackPayload) {
-            var feedbackPayload = (FeedbackPayload) payload;
+        if(payload instanceof FeedbackPayload feedbackPayload) {
             if(feedbackPayload.getPayloadState() == FeedbackState.REQUEST) { setupFeedback(feedbackPayload, true); }
         }
 
         payload.setOrigin(this.postOffice.getUnit());
 
-        this.postOffice.send(target.getId(), getTransmitReadyData(payload));
+        try {
+            final var data = getTransmitReadyData(payload);
+            this.postOffice.send(target.id(), data);
+        } catch(JsonProcessingException e) {
+            e.printStackTrace();
+        }
     }
 
     public void update() {
@@ -91,7 +99,7 @@ public class Pigeon {
         Feedback.getFeedbacks().put(id, feedback);
     }
 
-    private String getTransmitReadyData(BasePayload payload) {
+    private String getTransmitReadyData(BasePayload payload) throws JsonProcessingException {
         return payload.getPayloadId() + "&" + payload.toJson();
     }
 

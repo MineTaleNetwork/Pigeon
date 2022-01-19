@@ -1,7 +1,7 @@
 package cc.minetale.pigeon;
 
-import cc.minetale.pigeon.payloads.bases.BasePayload;
 import cc.minetale.pigeon.annotations.Payload;
+import cc.minetale.pigeon.payloads.bases.BasePayload;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfo;
 import lombok.Getter;
@@ -16,10 +16,10 @@ public class PayloadsRegistry {
     public void registerPayloadsInPackage(String prefix) {
         try (var scanResult =
                      new ClassGraph()
-                             .enableClassInfo()         // Scan classes, methods, fields, annotations
+                             .enableClassInfo()
                              .enableAnnotationInfo()
-                             .whitelistPackages(prefix)     // Scan com.xyz and subpackages (omit to scan all packages)
-                             .scan()) {               // Start the scan
+                             .acceptPackages(prefix)
+                             .scan()) {
             for (ClassInfo routeClassInfo : scanResult.getClassesWithAnnotation(Payload.class.getName())) {
                 Class<? extends BasePayload> clazz = (Class<? extends BasePayload>) routeClassInfo.loadClass();
                 if(isPayload(clazz)) { registerPayload(clazz); }
